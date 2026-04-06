@@ -10,6 +10,7 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Locale;
 import java.util.List;
 @Service @RequiredArgsConstructor
 public class AuthService {
@@ -18,16 +19,24 @@ public class AuthService {
     private final PasswordEncoder encoder; private final JwtUtil jwt; private final AuthenticationManager authManager;
     @Transactional
     public AuthResponse register(RegisterRequest req) {
-        if(userRepo.existsByEmail(req.getEmail())) throw new BadRequestException("Email already registered");
+        String email = normalizeEmail(req.getEmail());
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("Email is required");
+        }
+        if(userRepo.existsByEmailIgnoreCase(email)) throw new BadRequestException("Email already registered");
         if (req.getPassword() == null || !req.getPassword().matches(PASSWORD_POLICY)) {
             throw new BadRequestException("Password must be at least 8 characters and include upper, lower, number, and special character");
         }
-        User u = User.builder().firstName(req.getFirstName()).lastName(req.getLastName()).email(req.getEmail()).password(encoder.encode(req.getPassword())).currency(req.getCurrency()!=null?req.getCurrency():"EUR").build();
+        User u = User.builder().firstName(req.getFirstName()).lastName(req.getLastName()).email(email).password(encoder.encode(req.getPassword())).currency(req.getCurrency()!=null?req.getCurrency():"EUR").build();
         userRepo.save(u); seedCategories(u); return build(u, jwt.generateToken(u));
     }
     public AuthResponse login(AuthRequest req) {
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(),req.getPassword()));
-        User u = userRepo.findByEmail(req.getEmail()).orElseThrow(); return build(u, jwt.generateToken(u));
+        String email = normalizeEmail(req.getEmail());
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(email,req.getPassword()));
+        User u = userRepo.findByEmailIgnoreCase(email).orElseThrow(); return build(u, jwt.generateToken(u));
+    }
+    private String normalizeEmail(String email){
+        return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
     private void seedCategories(User u) {
         catRepo.saveAll(List.of(

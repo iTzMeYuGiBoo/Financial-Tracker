@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.*;
 
 @Entity @Table(name="users") @Data @Builder @NoArgsConstructor @AllArgsConstructor
@@ -15,6 +16,15 @@ public class User implements UserDetails {
     @Column(nullable=false) private String password;
     @Builder.Default private String currency = "EUR";
     @Builder.Default private LocalDateTime createdAt = LocalDateTime.now();
+
+    @PrePersist
+    @PreUpdate
+    private void normalizeEmail() {
+        if (email != null) {
+            email = email.trim().toLowerCase(Locale.ROOT);
+        }
+    }
+
     @Override public Collection<? extends GrantedAuthority> getAuthorities() { return List.of(); }
     @Override public String getUsername() { return email; }
     @Override public boolean isAccountNonExpired() { return true; }
