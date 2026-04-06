@@ -4,26 +4,32 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: financetracker
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d financetracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   backend:
     build: ./backend
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/financetracker
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      # All origins that are allowed to call Java (Node middleware spoofs Origin
-      # to FRONTEND_URL so http://localhost:3000 is the only one truly needed,
-      # but we list all for local dev without Docker too)
-      APP_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:5173,http://localhost:4000,http://middleware:4000"
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-ThisIsAVerySecretKeyForFinanceTrackerAppAt256BitsLongOrMore}
+      H2_CONSOLE_ENABLED: "false"
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:4000,http://middleware:4000}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
 
@@ -31,7 +37,7 @@ services:
     build: ./middleware
     environment:
       PORT: 4000
-      FRONTEND_URL: http://localhost:3000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       BACKEND_URL: http://backend:8080
       OPENAI_API_KEY: ${OPENAI_API_KEY:-your_openai_api_key_here}
     depends_on:
@@ -42,7 +48,6 @@ services:
   frontend:
     build: ./frontend
     depends_on:
-      - backend
       - middleware
     ports:
       - "3000:3000"

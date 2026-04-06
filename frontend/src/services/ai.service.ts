@@ -1,5 +1,5 @@
 import axios from "axios";
-const aiApi = axios.create({ baseURL: "http://localhost:4000/api", timeout: 30000 });
+const aiApi = axios.create({ baseURL: "/api", timeout: 30000 });
 export const aiService = {
   getInsights: (d:any) => aiApi.post("/ai/insights", d),
   getSavingsTips: (d:any) => aiApi.post("/ai/savings-tips", d),
