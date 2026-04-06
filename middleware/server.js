@@ -5,68 +5,67 @@ const rateLimit = require("express-rate-limit");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const app = express();
-const PORT = process.env.PORT || 4000;
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const PORT       = process.env.PORT        || 4000;
+const BACKEND    = process.env.BACKEND_URL  || "http://localhost:8080";
+const FRONTEND   = process.env.FRONTEND_URL || "http://localhost:3000";
 
-// CORS for the frontend
-app.use(cors({ origin: [FRONTEND_URL], credentials: true }));
+// ─── Global middleware ────────────────────────────────────────────────────────
+app.use(cors({ origin: FRONTEND, credentials: true }));
 
-// ─── Java proxy MUST be registered BEFORE express.json() ─────────────────────
-// express.json() consumes the body stream; if it runs first the proxy can't
-// forward the raw body to Java, causing malformed / empty requests → 403.
-//
-// We list every route that Node does NOT handle so they bypass body parsing
-// entirely and go straight through to Java.
-const javaProxy = createProxyMiddleware({
-  target: BACKEND_URL,
-  changeOrigin: true,
-  on: {
-    proxyReq: (proxyReq, req) => {
-      // Always forward the JWT token
-      const auth = req.headers["authorization"];
-      if (auth) proxyReq.setHeader("Authorization", auth);
+// ─── 1. NODE-ONLY routes (body parsing scoped here only) ─────────────────────
+// These routes are handled entirely by Node. They MUST be registered before
+// the Java proxy so they intercept first.
+const nodeRouter = express.Router();
+nodeRouter.use(express.json({ limit: "10mb" }));
 
-      // Spoof Origin to a value Java already trusts so CORS never blocks us
-      proxyReq.setHeader("Origin", FRONTEND_URL);
-
-      console.log(`[Proxy] ${req.method} ${req.url} → ${BACKEND_URL}${req.url}`);
-    },
-    error: (err, req, res) => {
-      console.error(`[Proxy Error] ${req.method} ${req.url}:`, err.message);
-      res.status(502).json({ error: "Backend unavailable", detail: err.message });
-    },
-  },
+const aiLimiter = rateLimit({
+  windowMs: 60_000, max: 20,
+  message: { error: "Too many AI requests, please try again in a minute." },
+});
+const subsLimiter = rateLimit({
+  windowMs: 60_000, max: 10,
+  message: { error: "Too many subscription requests, please try again later." },
 });
 
-// Routes that Node handles itself (NOT proxied to Java)
-const NODE_ONLY_ROUTES = [
-  "/api/ai",
-  "/api/receipt",
-  "/api/exchange-rates",
-  "/api/subscriptions",
-];
+nodeRouter.use("/ai",             aiLimiter,   require("./routes/ai"));
+nodeRouter.use("/receipt",                     require("./routes/receipt"));
+nodeRouter.use("/exchange-rates",              require("./routes/exchangeRates"));
+nodeRouter.use("/subscriptions",  subsLimiter, require("./routes/subscriptions"));
 
-// Attach proxy for every /api/* route that is NOT a Node-only route
-app.use("/api", (req, res, next) => {
-  const isNodeRoute = NODE_ONLY_ROUTES.some(r => req.path.startsWith(r.replace("/api", "")));
-  if (isNodeRoute) return next();
-  return javaProxy(req, res, next);
-});
+app.use("/api", nodeRouter);
 
-// ─── Body parsing only for Node-handled routes ────────────────────────────────
-app.use(express.json({ limit: "10mb" }));
+// ─── 2. JAVA PROXY — everything else under /api goes straight to Spring Boot ──
+// IMPORTANT: registered AFTER node routes but BEFORE any body-parser on app
+// level, so the raw request stream is intact for forwarding.
+app.use(
+  "/api",
+  createProxyMiddleware({
+    target: BACKEND,
+    changeOrigin: true,
+    on: {
+      proxyReq: (proxyReq, req) => {
+        // Forward JWT token
+        const auth = req.headers["authorization"];
+        if (auth) proxyReq.setHeader("Authorization", auth);
 
-// Rate limiters
-const aiLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, message: { error: "Too many AI requests, please try again in a minute." } });
-const subsLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, message: { error: "Too many subscription requests, please try again later." } });
+        // Set Origin to a value Java trusts (avoids CORS rejection)
+        proxyReq.setHeader("Origin", FRONTEND);
 
-// Node-handled routes
-app.use("/api/ai", aiLimiter, require("./routes/ai"));
-app.use("/api/receipt", require("./routes/receipt"));
-app.use("/api/exchange-rates", require("./routes/exchangeRates"));
-app.use("/api/subscriptions", subsLimiter, require("./routes/subscriptions"));
+        console.log(`[→ Java] ${req.method} ${req.originalUrl}`);
+      },
+      error: (err, req, res) => {
+        console.error(`[Proxy Error] ${req.method} ${req.originalUrl}:`, err.message);
+        res.status(502).json({ error: "Backend unavailable", detail: err.message });
+      },
+    },
+  })
+);
 
-app.get("/health", (req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
+// ─── Health check ─────────────────────────────────────────────────────────────
+app.get("/health", (_req, res) =>
+  res.json({ status: "ok", timestamp: new Date().toISOString() })
+);
 
-app.listen(PORT, () => console.log(`✅ Middleware running on http://localhost:${PORT} → proxying non-node /api/* to ${BACKEND_URL}`));
+app.listen(PORT, () =>
+  console.log(`✅ Middleware :${PORT}  |  Node routes: /api/ai /api/receipt /api/exchange-rates /api/subscriptions  |  Everything else → ${BACKEND}`)
+);

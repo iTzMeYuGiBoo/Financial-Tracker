@@ -18,9 +18,9 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      # Correct Spring Boot relaxed-binding key (underscores, not hyphens)
-      # Includes localhost:3000 (browser/dev), localhost:4000 (Node dev),
-      # and middleware:4000 (Docker internal network)
+      # All origins that are allowed to call Java (Node middleware spoofs Origin
+      # to FRONTEND_URL so http://localhost:3000 is the only one truly needed,
+      # but we list all for local dev without Docker too)
       APP_CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:5173,http://localhost:4000,http://middleware:4000"
     depends_on:
       - db
