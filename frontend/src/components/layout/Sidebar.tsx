@@ -34,18 +34,22 @@ const Sidebar: React.FC<Props> = ({ open = true, onClose = () => {} }) => {
 
   return (
     <>
+      {/* Mobile backdrop */}
       {open && (
         <div className="fixed inset-0 bg-black/40 z-20 lg:hidden" onClick={onClose} />
       )}
+
       <aside
         className={clsx(
-          "fixed top-0 left-0 h-full w-60 bg-white border-r border-gray-100 z-30 flex flex-col transition-transform duration-300",
-          "lg:translate-x-0 lg:static lg:z-auto",
+          // Full viewport height, fixed on mobile / static on desktop
+          "fixed top-0 left-0 h-screen w-60 bg-white border-r border-gray-100 z-30",
+          "flex flex-col transition-transform duration-300",
+          "lg:translate-x-0 lg:static lg:z-auto lg:h-screen",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+        {/* ── Logo ── */}
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-primary-600 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-white" />
@@ -63,8 +67,8 @@ const Sidebar: React.FC<Props> = ({ open = true, onClose = () => {} }) => {
           </button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto scrollbar-thin">
+        {/* ── Nav — scrollable, fills all remaining space ── */}
+        <nav className="flex-1 min-h-0 px-2 py-3 space-y-0.5 overflow-y-auto">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -85,8 +89,8 @@ const Sidebar: React.FC<Props> = ({ open = true, onClose = () => {} }) => {
           ))}
         </nav>
 
-        {/* User footer */}
-        <div className="px-2 py-3 border-t border-gray-100">
+        {/* ── User footer — always pinned to bottom ── */}
+        <div className="px-2 py-3 border-t border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-50 mb-1.5">
             <div className="w-7 h-7 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-primary-700 text-xs font-bold uppercase">
