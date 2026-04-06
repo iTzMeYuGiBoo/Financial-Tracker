@@ -26,34 +26,41 @@ nodeRouter.use("/subscriptions",  subsLimiter, require("./routes/subscriptions")
 
 app.use("/api", nodeRouter);
 
-// ─── Java catch-all proxy using axios (no hanging, no stream issues) ──────────
-// Reads raw body as Buffer so nothing is parsed/consumed before forwarding.
+// ─── Java catch-all proxy ──────────────────────────────────────────────────────────
 app.use("/api", express.raw({ type: "*/*", limit: "20mb" }), async (req, res) => {
-  const url = `${BACKEND}${req.originalUrl}`;
+  const url         = `${BACKEND}${req.originalUrl}`;
+  const contentType = (req.headers["content-type"] || "").toLowerCase();
 
-  // Forward all original headers, override Origin so Java CORS always passes
+  // Convert Buffer to the right type for axios
+  let data;
+  if (req.body && req.body.length > 0) {
+    if (contentType.includes("application/json") || contentType.includes("text/")) {
+      data = req.body.toString("utf8");   // string — axios sends as-is
+    } else {
+      data = req.body;                    // Buffer — for file uploads etc.
+    }
+  }
+
   const headers = {
     ...req.headers,
-    host: new URL(BACKEND).host,
+    host:   new URL(BACKEND).host,
     origin: FRONTEND,
   };
-  // Remove headers that would confuse axios / Java
-  delete headers["content-length"]; // axios recalculates this
+  delete headers["content-length"]; // axios recalculates correctly
 
   console.log(`[\u2192 Java] ${req.method} ${req.originalUrl}`);
 
   try {
     const response = await axios({
-      method:  req.method,
+      method:         req.method,
       url,
       headers,
-      data:    req.body && req.body.length ? req.body : undefined,
-      responseType: "arraybuffer",
-      validateStatus: () => true, // forward ANY status code (including 4xx/5xx)
-      timeout: 30000,
+      data,
+      responseType:   "arraybuffer",
+      validateStatus: () => true,   // forward all status codes including 4xx/5xx
+      timeout:        30000,
     });
 
-    // Forward Java's response headers back to the browser
     Object.entries(response.headers).forEach(([k, v]) => {
       if (k.toLowerCase() !== "transfer-encoding") res.setHeader(k, v);
     });
