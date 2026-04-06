@@ -1,11 +1,10 @@
 export default {
-  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
         primary: {
-          50: "#eff6ff",
+          50:  "#eff6ff",
           100: "#dbeafe",
           200: "#bfdbfe",
           300: "#93c5fd",
@@ -20,7 +19,7 @@ export default {
       animation: { "fade-in": "fadeIn 0.2s ease-out" },
       keyframes: {
         fadeIn: {
-          "0%": { opacity: "0", transform: "scale(0.97)" },
+          "0%":   { opacity: "0", transform: "scale(0.97)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
       },
