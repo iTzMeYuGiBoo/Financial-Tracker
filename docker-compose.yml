@@ -47,6 +47,8 @@ services:
 
   frontend:
     build: ./frontend
+    environment:
+      MIDDLEWARE_HOST: middleware:4000
     depends_on:
       - middleware
     ports:
