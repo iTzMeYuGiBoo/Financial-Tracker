@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 public class RecurringTransaction {
     public enum Frequency { WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY, YEARLY }
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
-    @Column(nullable=false) private String name;
+    @Column(nullable=true) private String name;
     @Column(nullable=false,precision=15,scale=2) private BigDecimal amount;
     @Enumerated(EnumType.STRING) @Column(nullable=false) private Transaction.TransactionType type;
     @Enumerated(EnumType.STRING) @Column(nullable=false) private Frequency frequency;
-    @Column(nullable=false) private LocalDate nextDueDate;
+    @Column(nullable=true) private LocalDate nextDueDate;
     private LocalDate endDate;
     private LocalDate lastExecutedDate;
     @Builder.Default private Boolean active = true;
