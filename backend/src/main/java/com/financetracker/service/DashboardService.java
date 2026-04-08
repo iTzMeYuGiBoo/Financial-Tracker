@@ -101,7 +101,7 @@ public class DashboardService {
                                         r.put("amount", t.getAmount());
                                         r.put("currencySymbol",
                                                         t.getBankAccount() != null
-                                                                        ? t.getBankAccount().getCurrencySymbol()
+                                                                        ? t.getBankAccount().getCurrency().getSymbol()
                                                                         : "€");
                                         r.put("co2Kg", t.getCo2Kg());
                                         return r;

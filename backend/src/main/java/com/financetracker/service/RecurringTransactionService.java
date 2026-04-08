@@ -54,7 +54,7 @@ public class RecurringTransactionService {
         m.put("id",r.getId());m.put("name",r.getName());m.put("amount",r.getAmount());m.put("type",r.getType().name());m.put("frequency",r.getFrequency().name());
         m.put("nextDueDate",r.getNextDueDate().toString());m.put("endDate",r.getEndDate()!=null?r.getEndDate().toString():null);m.put("lastExecutedDate",r.getLastExecutedDate()!=null?r.getLastExecutedDate().toString():null);m.put("active",r.getActive());m.put("note",r.getNote());
         m.put("categoryId",r.getCategory().getId());m.put("categoryName",r.getCategory().getName());m.put("categoryIcon",r.getCategory().getIcon());m.put("categoryColor",r.getCategory().getColor());
-        if(r.getBankAccount()!=null){m.put("bankAccountId",r.getBankAccount().getId());m.put("bankAccountName",r.getBankAccount().getName());m.put("bankAccountCurrency",r.getBankAccount().getCurrencyCode());}
+        if(r.getBankAccount()!=null){m.put("bankAccountId",r.getBankAccount().getId());m.put("bankAccountName",r.getBankAccount().getName());m.put("bankAccountCurrency",r.getBankAccount().getCurrency().getCode());}
         m.put("createdAt",r.getCreatedAt().toString()); return m;
     }
 }

@@ -1,0 +1,194 @@
+package com.financetracker.service;
+
+import com.financetracker.entity.Currency;
+import com.financetracker.repository.CurrencyRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CurrencySeeder implements ApplicationRunner {
+
+    private final CurrencyRepository repo;
+
+    // Each row: code, symbol, name, country, flag
+    private static final String[][] CURRENCIES = {
+        {"AED","د.إ","UAE Dirham","United Arab Emirates","🇦🇪"},
+        {"AFN","؋","Afghan Afghani","Afghanistan","🇦🇫"},
+        {"ALL","L","Albanian Lek","Albania","🇦🇱"},
+        {"AMD","֏","Armenian Dram","Armenia","🇦🇲"},
+        {"ANG","ƒ","Netherlands Antillean Guilder","Netherlands Antilles","🇳🇱"},
+        {"AOA","Kz","Angolan Kwanza","Angola","🇦🇴"},
+        {"ARS","$","Argentine Peso","Argentina","🇦🇷"},
+        {"AUD","A$","Australian Dollar","Australia","🇦🇺"},
+        {"AWG","ƒ","Aruban Florin","Aruba","🇦🇼"},
+        {"AZN","₼","Azerbaijani Manat","Azerbaijan","🇦🇿"},
+        {"BAM","KM","Bosnia-Herzegovina Convertible Mark","Bosnia and Herzegovina","🇧🇦"},
+        {"BBD","Bds$","Barbadian Dollar","Barbados","🇧🇧"},
+        {"BDT","৳","Bangladeshi Taka","Bangladesh","🇧🇩"},
+        {"BGN","лв","Bulgarian Lev","Bulgaria","🇧🇬"},
+        {"BHD",".د.ب","Bahraini Dinar","Bahrain","🇧🇭"},
+        {"BIF","Fr","Burundian Franc","Burundi","🇧🇮"},
+        {"BMD","$","Bermudian Dollar","Bermuda","🇧🇲"},
+        {"BND","B$","Brunei Dollar","Brunei","🇧🇳"},
+        {"BOB","Bs.","Bolivian Boliviano","Bolivia","🇧🇴"},
+        {"BRL","R$","Brazilian Real","Brazil","🇧🇷"},
+        {"BSD","$","Bahamian Dollar","Bahamas","🇧🇸"},
+        {"BTN","Nu","Bhutanese Ngultrum","Bhutan","🇧🇹"},
+        {"BWP","P","Botswanan Pula","Botswana","🇧🇼"},
+        {"BYN","Br","Belarusian Ruble","Belarus","🇧🇾"},
+        {"BZD","BZ$","Belize Dollar","Belize","🇧🇿"},
+        {"CAD","C$","Canadian Dollar","Canada","🇨🇦"},
+        {"CDF","Fr","Congolese Franc","DR Congo","🇨🇩"},
+        {"CHF","Fr","Swiss Franc","Switzerland","🇨🇭"},
+        {"CLP","$","Chilean Peso","Chile","🇨🇱"},
+        {"CNY","¥","Chinese Yuan","China","🇨🇳"},
+        {"COP","$","Colombian Peso","Colombia","🇨🇴"},
+        {"CRC","₡","Costa Rican Colón","Costa Rica","🇨🇷"},
+        {"CUP","$","Cuban Peso","Cuba","🇨🇺"},
+        {"CVE","$","Cape Verdean Escudo","Cape Verde","🇨🇻"},
+        {"CZK","Kč","Czech Koruna","Czech Republic","🇨🇿"},
+        {"DJF","Fr","Djiboutian Franc","Djibouti","🇩🇯"},
+        {"DKK","kr","Danish Krone","Denmark","🇩🇰"},
+        {"DOP","RD$","Dominican Peso","Dominican Republic","🇩🇴"},
+        {"DZD","دج","Algerian Dinar","Algeria","🇩🇿"},
+        {"EGP","£","Egyptian Pound","Egypt","🇪🇬"},
+        {"ERN","Nfk","Eritrean Nakfa","Eritrea","🇪🇷"},
+        {"ETB","Br","Ethiopian Birr","Ethiopia","🇪🇹"},
+        {"EUR","€","Euro","Eurozone","🇪🇺"},
+        {"FJD","FJ$","Fijian Dollar","Fiji","🇫🇯"},
+        {"FKP","£","Falkland Islands Pound","Falkland Islands","🇫🇰"},
+        {"GBP","£","British Pound","United Kingdom","🇬🇧"},
+        {"GEL","₾","Georgian Lari","Georgia","🇬🇪"},
+        {"GHS","₵","Ghanaian Cedi","Ghana","🇬🇭"},
+        {"GIP","£","Gibraltar Pound","Gibraltar","🇬🇮"},
+        {"GMD","D","Gambian Dalasi","Gambia","🇬🇲"},
+        {"GNF","Fr","Guinean Franc","Guinea","🇬🇳"},
+        {"GTQ","Q","Guatemalan Quetzal","Guatemala","🇬🇹"},
+        {"GYD","$","Guyanese Dollar","Guyana","🇬🇾"},
+        {"HKD","HK$","Hong Kong Dollar","Hong Kong","🇭🇰"},
+        {"HNL","L","Honduran Lempira","Honduras","🇭🇳"},
+        {"HRK","kn","Croatian Kuna","Croatia","🇭🇷"},
+        {"HTG","G","Haitian Gourde","Haiti","🇭🇹"},
+        {"HUF","Ft","Hungarian Forint","Hungary","🇭🇺"},
+        {"IDR","Rp","Indonesian Rupiah","Indonesia","🇮🇩"},
+        {"ILS","₪","Israeli New Shekel","Israel","🇮🇱"},
+        {"INR","₹","Indian Rupee","India","🇮🇳"},
+        {"IQD","ع.د","Iraqi Dinar","Iraq","🇮🇶"},
+        {"IRR","﷼","Iranian Rial","Iran","🇮🇷"},
+        {"ISK","kr","Icelandic Króna","Iceland","🇮🇸"},
+        {"JMD","J$","Jamaican Dollar","Jamaica","🇯🇲"},
+        {"JOD","JD","Jordanian Dinar","Jordan","🇯🇴"},
+        {"JPY","¥","Japanese Yen","Japan","🇯🇵"},
+        {"KES","KSh","Kenyan Shilling","Kenya","🇰🇪"},
+        {"KGS","с","Kyrgyzstani Som","Kyrgyzstan","🇰🇬"},
+        {"KHR","៛","Cambodian Riel","Cambodia","🇰🇭"},
+        {"KMF","Fr","Comorian Franc","Comoros","🇰🇲"},
+        {"KPW","₩","North Korean Won","North Korea","🇰🇵"},
+        {"KRW","₩","South Korean Won","South Korea","🇰🇷"},
+        {"KWD","KD","Kuwaiti Dinar","Kuwait","🇰🇼"},
+        {"KYD","$","Cayman Islands Dollar","Cayman Islands","🇰🇾"},
+        {"KZT","₸","Kazakhstani Tenge","Kazakhstan","🇰🇿"},
+        {"LAK","₭","Lao Kip","Laos","🇱🇦"},
+        {"LBP","£","Lebanese Pound","Lebanon","🇱🇧"},
+        {"LKR","Rs","Sri Lankan Rupee","Sri Lanka","🇱🇰"},
+        {"LRD","$","Liberian Dollar","Liberia","🇱🇷"},
+        {"LSL","L","Lesotho Loti","Lesotho","🇱🇸"},
+        {"LYD","LD","Libyan Dinar","Libya","🇱🇾"},
+        {"MAD","MAD","Moroccan Dirham","Morocco","🇲🇦"},
+        {"MDL","L","Moldovan Leu","Moldova","🇲🇩"},
+        {"MGA","Ar","Malagasy Ariary","Madagascar","🇲🇬"},
+        {"MKD","ден","Macedonian Denar","North Macedonia","🇲🇰"},
+        {"MMK","K","Myanmar Kyat","Myanmar","🇲🇲"},
+        {"MNT","₮","Mongolian Tögrög","Mongolia","🇲🇳"},
+        {"MOP","P","Macanese Pataca","Macau","🇲🇴"},
+        {"MRU","UM","Mauritanian Ouguiya","Mauritania","🇲🇷"},
+        {"MUR","Rs","Mauritian Rupee","Mauritius","🇲🇺"},
+        {"MVR","Rf","Maldivian Rufiyaa","Maldives","🇲🇻"},
+        {"MWK","MK","Malawian Kwacha","Malawi","🇲🇼"},
+        {"MXN","$","Mexican Peso","Mexico","🇲🇽"},
+        {"MYR","RM","Malaysian Ringgit","Malaysia","🇲🇾"},
+        {"MZN","MT","Mozambican Metical","Mozambique","🇲🇿"},
+        {"NAD","$","Namibian Dollar","Namibia","🇳🇦"},
+        {"NGN","₦","Nigerian Naira","Nigeria","🇳🇬"},
+        {"NIO","C$","Nicaraguan Córdoba","Nicaragua","🇳🇮"},
+        {"NOK","kr","Norwegian Krone","Norway","🇳🇴"},
+        {"NPR","Rs","Nepalese Rupee","Nepal","🇳🇵"},
+        {"NZD","NZ$","New Zealand Dollar","New Zealand","🇳🇿"},
+        {"OMR","ر.ع.","Omani Rial","Oman","🇴🇲"},
+        {"PAB","B/.","Panamanian Balboa","Panama","🇵🇦"},
+        {"PEN","S/","Peruvian Sol","Peru","🇵🇪"},
+        {"PGK","K","Papua New Guinean Kina","Papua New Guinea","🇵🇬"},
+        {"PHP","₱","Philippine Peso","Philippines","🇵🇭"},
+        {"PKR","Rs","Pakistani Rupee","Pakistan","🇵🇰"},
+        {"PLN","zł","Polish Zloty","Poland","🇵🇱"},
+        {"PYG","₲","Paraguayan Guaraní","Paraguay","🇵🇾"},
+        {"QAR","ر.ق","Qatari Riyal","Qatar","🇶🇦"},
+        {"RON","lei","Romanian Leu","Romania","🇷🇴"},
+        {"RSD","din","Serbian Dinar","Serbia","🇷🇸"},
+        {"RUB","₽","Russian Ruble","Russia","🇷🇺"},
+        {"RWF","Fr","Rwandan Franc","Rwanda","🇷🇼"},
+        {"SAR","ر.س","Saudi Riyal","Saudi Arabia","🇸🇦"},
+        {"SBD","$","Solomon Islands Dollar","Solomon Islands","🇸🇧"},
+        {"SCR","Rs","Seychellois Rupee","Seychelles","🇸🇨"},
+        {"SDG","£","Sudanese Pound","Sudan","🇸🇩"},
+        {"SEK","kr","Swedish Krona","Sweden","🇸🇪"},
+        {"SGD","S$","Singapore Dollar","Singapore","🇸🇬"},
+        {"SHP","£","Saint Helena Pound","Saint Helena","🇸🇭"},
+        {"SLL","Le","Sierra Leonean Leone","Sierra Leone","🇸🇱"},
+        {"SOS","Sh","Somali Shilling","Somalia","🇸🇴"},
+        {"SRD","$","Surinamese Dollar","Suriname","🇸🇷"},
+        {"SSP","£","South Sudanese Pound","South Sudan","🇸🇸"},
+        {"STN","Db","São Tomé and Príncipe Dobra","São Tomé and Príncipe","🇸🇹"},
+        {"SYP","£","Syrian Pound","Syria","🇸🇾"},
+        {"SZL","L","Swazi Lilangeni","Eswatini","🇸🇿"},
+        {"THB","฿","Thai Baht","Thailand","🇹🇭"},
+        {"TJS","SM","Tajikistani Somoni","Tajikistan","🇹🇯"},
+        {"TMT","T","Turkmenistani Manat","Turkmenistan","🇹🇲"},
+        {"TND","DT","Tunisian Dinar","Tunisia","🇹🇳"},
+        {"TOP","T$","Tongan Paʻanga","Tonga","🇹🇴"},
+        {"TRY","₺","Turkish Lira","Turkey","🇹🇷"},
+        {"TTD","TT$","Trinidad and Tobago Dollar","Trinidad and Tobago","🇹🇹"},
+        {"TWD","NT$","New Taiwan Dollar","Taiwan","🇹🇼"},
+        {"TZS","Sh","Tanzanian Shilling","Tanzania","🇹🇿"},
+        {"UAH","₴","Ukrainian Hryvnia","Ukraine","🇺🇦"},
+        {"UGX","Sh","Ugandan Shilling","Uganda","🇺🇬"},
+        {"USD","$","US Dollar","United States","🇺🇸"},
+        {"UYU","$U","Uruguayan Peso","Uruguay","🇺🇾"},
+        {"UZS","so'm","Uzbekistani Som","Uzbekistan","🇺🇿"},
+        {"VES","Bs.","Venezuelan Bolívar","Venezuela","🇻🇪"},
+        {"VND","₫","Vietnamese Dong","Vietnam","🇻🇳"},
+        {"VUV","Vt","Vanuatu Vatu","Vanuatu","🇻🇺"},
+        {"WST","T","Samoan Tala","Samoa","🇼🇸"},
+        {"XAF","Fr","Central African CFA Franc","Central Africa","🌍"},
+        {"XCD","$","East Caribbean Dollar","Eastern Caribbean","🌎"},
+        {"XOF","Fr","West African CFA Franc","West Africa","🌍"},
+        {"XPF","Fr","CFP Franc","French Polynesia","🇵🇫"},
+        {"YER","﷼","Yemeni Rial","Yemen","🇾🇪"},
+        {"ZAR","R","South African Rand","South Africa","🇿🇦"},
+        {"ZMW","ZK","Zambian Kwacha","Zambia","🇿🇲"},
+        {"ZWL","$","Zimbabwean Dollar","Zimbabwe","🇿🇼"},
+    };
+
+    @Override
+    @Transactional
+    public void run(ApplicationArguments args) {
+        if (repo.count() > 0) return; // already seeded
+        log.info("Seeding {} currencies into database...", CURRENCIES.length);
+        List<Currency> entities = new java.util.ArrayList<>();
+        for (String[] row : CURRENCIES) {
+            entities.add(Currency.builder()
+                .code(row[0]).symbol(row[1]).name(row[2]).country(row[3]).flag(row[4])
+                .build());
+        }
+        repo.saveAll(entities);
+        log.info("Currency seeding complete.");
+    }
+}

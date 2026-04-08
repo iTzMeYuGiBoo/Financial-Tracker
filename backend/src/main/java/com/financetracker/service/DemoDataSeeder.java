@@ -1,6 +1,7 @@
 package com.financetracker.service;
 
 import com.financetracker.entity.*;
+import com.financetracker.entity.Currency;
 import com.financetracker.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final SavingsGoalRepository goalRepo;
     private final BudgetRepository budgetRepo;
     private final PasswordEncoder encoder;
+    private final CurrencyRepository currencyRepo;
 
     // Same CO2 factors as TransactionService – keeps carbon data consistent
     private static final Map<String, Double> CO2_FACTORS = Map.of(
@@ -78,17 +80,19 @@ public class DemoDataSeeder implements CommandLineRunner {
                 shopping, entertainment, health, housing, utilities, education, travel));
 
         // ── Bank Accounts (initial balance = 0; computed after seeding txns) ──
+        Currency eurCurrency = currencyRepo.findByCode("EUR").orElse(null);
+        Currency usdCurrency = currencyRepo.findByCode("USD").orElse(null);
         BankAccount main = BankAccount.builder().name("AIB Current").icon("🏦").color("#3B82F6")
-                .currencyCode("EUR").currencySymbol("€").currencyName("Euro").country("Ireland")
+                .currency(eurCurrency)
                 .currentBalance(BigDecimal.ZERO).isCreditCard(false).user(user).build();
         BankAccount savings = BankAccount.builder().name("Revolut Savings").icon("💰").color("#10B981")
-                .currencyCode("EUR").currencySymbol("€").currencyName("Euro").country("Ireland")
+                .currency(eurCurrency)
                 .currentBalance(BigDecimal.ZERO).isCreditCard(false).user(user).build();
         BankAccount usd = BankAccount.builder().name("Wise USD").icon("🌍").color("#8B5CF6")
-                .currencyCode("USD").currencySymbol("$").currencyName("US Dollar").country("Global")
+                .currency(usdCurrency)
                 .currentBalance(BigDecimal.ZERO).isCreditCard(false).user(user).build();
         BankAccount cc = BankAccount.builder().name("Visa Gold").icon("💳").color("#F97316")
-                .currencyCode("EUR").currencySymbol("€").currencyName("Euro").country("Ireland")
+                .currency(eurCurrency)
                 .currentBalance(BigDecimal.ZERO).isCreditCard(true)
                 .creditLimit(new BigDecimal("5000.00")).creditUsed(BigDecimal.ZERO).user(user).build();
         bankRepo.saveAll(List.of(main, savings, usd, cc));
@@ -98,11 +102,6 @@ public class DemoDataSeeder implements CommandLineRunner {
         BigDecimal ccUsed = BigDecimal.ZERO;
 
         // ── Transactions (6 months of realistic data) ───────────────
-        LocalDate today = LocalDate.now();
-
-        // {description, amount, type, category, account, monthsAgo, dayOfMonth, note}
-        Object[][] txData = {
-                // ... (data rows)
         LocalDate today = LocalDate.now();
 
         // {description, amount, type, category, account, monthsAgo, dayOfMonth, note}

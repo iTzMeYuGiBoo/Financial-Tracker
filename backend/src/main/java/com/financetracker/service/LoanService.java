@@ -92,6 +92,8 @@ public class LoanService {
                 .orElseThrow(() -> new ResourceNotFoundException("Loan not found"));
 
         List<Map<String,Object>> schedule = new ArrayList<>();
+        if (loan.getTotalAmount() == null || loan.getAmountPaid() == null) return schedule;
+
         BigDecimal remaining = loan.getTotalAmount().subtract(loan.getAmountPaid());
         BigDecimal monthlyRate = loan.getInterestRate() != null
                 ? loan.getInterestRate().divide(BigDecimal.valueOf(1200), 10, RoundingMode.HALF_UP)
@@ -147,7 +149,7 @@ public class LoanService {
         m.put("totalAmount", l.getTotalAmount());
         m.put("amountPaid", l.getAmountPaid());
         m.put("remainingAmount", l.getTotalAmount().subtract(l.getAmountPaid()));
-        BigDecimal pct = l.getTotalAmount().compareTo(BigDecimal.ZERO) > 0
+        BigDecimal pct = (l.getTotalAmount() != null && l.getTotalAmount().compareTo(BigDecimal.ZERO) > 0)
                 ? l.getAmountPaid().multiply(BigDecimal.valueOf(100)).divide(l.getTotalAmount(), 1, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
         m.put("progressPercentage", pct);

@@ -153,8 +153,8 @@ public class TransactionService {
         if (t.getBankAccount() != null) {
             m.put("bankAccountId", t.getBankAccount().getId());
             m.put("bankAccountName", t.getBankAccount().getName());
-            m.put("bankAccountCurrency", t.getBankAccount().getCurrencyCode());
-            m.put("bankAccountCurrencySymbol", t.getBankAccount().getCurrencySymbol());
+            m.put("bankAccountCurrency", t.getBankAccount().getCurrency().getCode());
+            m.put("bankAccountCurrencySymbol", t.getBankAccount().getCurrency().getSymbol());
             m.put("bankAccountColor", t.getBankAccount().getColor());
         }
         return m;

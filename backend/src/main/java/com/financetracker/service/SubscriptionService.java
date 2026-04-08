@@ -81,7 +81,7 @@ public class SubscriptionService {
             if (last.getBankAccount() != null) {
                 sub.put("bankAccountId", last.getBankAccount().getId());
                 sub.put("bankAccountName", last.getBankAccount().getName());
-                sub.put("currencySymbol", last.getBankAccount().getCurrencySymbol());
+                sub.put("currencySymbol", last.getBankAccount().getCurrency().getSymbol());
             } else {
                 sub.put("currencySymbol", "€");
             }

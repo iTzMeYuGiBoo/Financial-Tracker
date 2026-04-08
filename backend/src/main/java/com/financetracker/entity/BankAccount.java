@@ -9,10 +9,7 @@ public class BankAccount {
     @Column(nullable=false) private String name;
     @Builder.Default private String icon = "🏦";
     @Builder.Default private String color = "#3B82F6";
-    @Column(nullable=false) private String currencyCode;
-    @Column(nullable=false) private String currencySymbol;
-    private String currencyName;
-    private String country;
+    @ManyToOne(fetch=FetchType.EAGER) @JoinColumn(name="currency_id", nullable=false) private Currency currency;
     @Builder.Default @Column(precision = 15, scale = 2) private BigDecimal currentBalance = BigDecimal.ZERO;
     @Builder.Default private Boolean isCreditCard = false;
     @Builder.Default @Column(precision = 15, scale = 2) private BigDecimal creditLimit = BigDecimal.ZERO;
