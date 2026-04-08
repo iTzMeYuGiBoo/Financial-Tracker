@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "monthly_notes", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "note_year",
+@Table(name = "monthly_notes", schema = "finance_app", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "note_year",
         "note_month" }))
 @Data
 @Builder

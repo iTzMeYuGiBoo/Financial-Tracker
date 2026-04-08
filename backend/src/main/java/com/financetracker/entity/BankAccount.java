@@ -3,13 +3,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-@Entity @Table(name="bank_accounts") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="bank_accounts", schema="finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class BankAccount {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     @Column(nullable=false) private String name;
     @Builder.Default private String icon = "🏦";
     @Builder.Default private String color = "#3B82F6";
-    @ManyToOne(fetch=FetchType.EAGER) @JoinColumn(name="currency_id", nullable=false) private Currency currency;
+    @ManyToOne(fetch=FetchType.EAGER) @JoinColumn(name="currency_id") private Currency currency;
     @Builder.Default @Column(precision = 15, scale = 2) private BigDecimal currentBalance = BigDecimal.ZERO;
     @Builder.Default private Boolean isCreditCard = false;
     @Builder.Default @Column(precision = 15, scale = 2) private BigDecimal creditLimit = BigDecimal.ZERO;

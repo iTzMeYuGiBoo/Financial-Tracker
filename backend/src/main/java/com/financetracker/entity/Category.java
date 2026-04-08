@@ -1,7 +1,7 @@
 package com.financetracker.entity;
 import jakarta.persistence.*;
 import lombok.*;
-@Entity @Table(name="categories") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="categories", schema="finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Category {
     public enum CategoryType { INCOME, EXPENSE }
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;

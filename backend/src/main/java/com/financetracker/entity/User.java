@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.*;
 
-@Entity @Table(name="users") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="users", schema="finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class User implements UserDetails {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     private String firstName;

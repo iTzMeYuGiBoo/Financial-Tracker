@@ -4,7 +4,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-@Entity @Table(name="loans") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="loans", schema="finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Loan {
     public enum LoanType { PERSONAL, EDUCATIONAL, MORTGAGE, AUTO, MEDICAL, BUSINESS, OTHER }
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;

@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "currencies")
+@Table(name = "currencies", schema = "finance_app")
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Currency {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

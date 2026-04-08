@@ -20,7 +20,7 @@ import java.util.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@Order(2)
+@Order(3)
 public class DemoDataSeeder implements CommandLineRunner {
     private static final String DEMO_EMAIL = "demo@financetracker.com";
     private static final String DEMO_PASSWORD = "Demo@1234";

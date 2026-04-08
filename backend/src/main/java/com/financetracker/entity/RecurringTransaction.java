@@ -4,7 +4,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-@Entity @Table(name="recurring_transactions") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="recurring_transactions", schema="finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class RecurringTransaction {
     public enum Frequency { WEEKLY, BIWEEKLY, MONTHLY, QUARTERLY, YEARLY }
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;

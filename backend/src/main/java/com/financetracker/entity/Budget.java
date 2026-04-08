@@ -5,7 +5,7 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "budgets", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "category_id", "budget_month",
+@Table(name = "budgets", schema = "finance_app", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "category_id", "budget_month",
         "budget_year" }))
 @Data
 @Builder
