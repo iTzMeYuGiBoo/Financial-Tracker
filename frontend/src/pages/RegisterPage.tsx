@@ -9,7 +9,6 @@ import { register as registerAction } from "../store/slices/authSlice";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 
-const CURRENCIES = ["EUR","GBP","USD","INR","JPY","CAD","AUD","CHF","CNY","AED","NGN","BRL","MXN","ZAR","SGD"];
 const schema = z.object({
   firstName:z.string().min(1),
   lastName:z.string().min(1),
@@ -17,14 +16,13 @@ const schema = z.object({
   password:z.string()
     .min(8,"Min 8 chars")
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/, "Use upper, lower, number, and special char"),
-  currency:z.string().min(1)
 });
 type F = z.infer<typeof schema>;
 
 const RegisterPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<F>({ resolver: zodResolver(schema), defaultValues:{currency:"EUR"} });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<F>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: F) => {
     try { await dispatch(registerAction(data)).unwrap(); toast.success("Account created!"); navigate("/dashboard"); }
@@ -47,12 +45,6 @@ const RegisterPage: React.FC = () => {
             </div>
             <div><label className="label">Email</label><input {...register("email")} type="email" className="input" placeholder="you@example.com" />{errors.email&&<p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}</div>
             <div><label className="label">Password</label><input {...register("password")} type="password" className="input" placeholder="Min 8 chars incl. Aa1!" />{errors.password&&<p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}</div>
-            <div>
-              <label className="label">Primary Currency</label>
-              <select {...register("currency")} className="input">
-                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full justify-center">{isSubmitting?<LoadingSpinner size="sm"/>:"Create Account"}</button>
           </form>
           <p className="text-center text-sm text-gray-500 mt-4">Already have an account? <Link to="/login" className="text-primary-600 font-semibold hover:underline">Sign in</Link></p>

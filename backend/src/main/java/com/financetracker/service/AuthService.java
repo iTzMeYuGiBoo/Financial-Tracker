@@ -27,7 +27,7 @@ public class AuthService {
         if (req.getPassword() == null || !req.getPassword().matches(PASSWORD_POLICY)) {
             throw new BadRequestException("Password must be at least 8 characters and include upper, lower, number, and special character");
         }
-        User u = User.builder().firstName(req.getFirstName()).lastName(req.getLastName()).email(email).password(encoder.encode(req.getPassword())).currency(req.getCurrency()!=null?req.getCurrency():"EUR").build();
+        User u = User.builder().firstName(req.getFirstName()).lastName(req.getLastName()).email(email).password(encoder.encode(req.getPassword())).build();
         userRepo.save(u); seedCategories(u); return build(u, jwt.generateToken(u));
     }
     public AuthResponse login(AuthRequest req) {
@@ -47,5 +47,5 @@ public class AuthService {
         ));
     }
     private Category cat(String n,String i,String c,Category.CategoryType t,User u){return Category.builder().name(n).icon(i).color(c).type(t).user(u).build();}
-    private AuthResponse build(User u,String t){return AuthResponse.builder().token(t).email(u.getEmail()).firstName(u.getFirstName()).lastName(u.getLastName()).currency(u.getCurrency()).build();}
+    private AuthResponse build(User u,String t){return AuthResponse.builder().token(t).email(u.getEmail()).firstName(u.getFirstName()).lastName(u.getLastName()).build();}
 }

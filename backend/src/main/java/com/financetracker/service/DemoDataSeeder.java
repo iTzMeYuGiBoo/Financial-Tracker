@@ -6,6 +6,7 @@ import com.financetracker.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.util.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Order(2)
 public class DemoDataSeeder implements CommandLineRunner {
     private static final String DEMO_EMAIL = "demo@financetracker.com";
     private static final String DEMO_PASSWORD = "Demo@1234";
@@ -59,7 +61,7 @@ public class DemoDataSeeder implements CommandLineRunner {
                 .firstName("Demo").lastName("User")
                 .email(DEMO_EMAIL)
                 .password(encoder.encode(DEMO_PASSWORD))
-                .currency("EUR").build();
+                .build();
         userRepo.save(user);
 
         // ── Categories ──────────────────────────────────────────────
@@ -80,8 +82,10 @@ public class DemoDataSeeder implements CommandLineRunner {
                 shopping, entertainment, health, housing, utilities, education, travel));
 
         // ── Bank Accounts (initial balance = 0; computed after seeding txns) ──
-        Currency eurCurrency = currencyRepo.findByCode("EUR").orElse(null);
-        Currency usdCurrency = currencyRepo.findByCode("USD").orElse(null);
+        Currency eurCurrency = currencyRepo.findByCode("EUR").orElseThrow(() ->
+                new IllegalStateException("EUR currency not found — CurrencySeeder must run first"));
+        Currency usdCurrency = currencyRepo.findByCode("USD").orElseThrow(() ->
+                new IllegalStateException("USD currency not found — CurrencySeeder must run first"));
         BankAccount main = BankAccount.builder().name("AIB Current").icon("🏦").color("#3B82F6")
                 .currency(eurCurrency)
                 .currentBalance(BigDecimal.ZERO).isCreditCard(false).user(user).build();

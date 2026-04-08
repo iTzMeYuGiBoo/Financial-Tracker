@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "../../services/api";
-interface User { firstName:string; lastName:string; email:string; currency:string; }
+interface User { firstName:string; lastName:string; email:string; }
 interface AuthState { user:User|null; token:string|null; loading:boolean; }
 const initialState: AuthState = {
   user: (() => { try { return JSON.parse(localStorage.getItem("user")||"null"); } catch { return null; } })(),
@@ -18,10 +18,10 @@ const authSlice = createSlice({
   reducers: { logout(state) { state.user=null; state.token=null; localStorage.removeItem("token"); localStorage.removeItem("user"); } },
   extraReducers: b => {
     b.addCase(login.pending, s=>{s.loading=true});
-    b.addCase(login.fulfilled, (s,a)=>{ s.loading=false; s.token=a.payload.token; s.user={firstName:a.payload.firstName,lastName:a.payload.lastName,email:a.payload.email,currency:a.payload.currency}; localStorage.setItem("token",a.payload.token); localStorage.setItem("user",JSON.stringify(s.user)); });
+    b.addCase(login.fulfilled, (s,a)=>{ s.loading=false; s.token=a.payload.token; s.user={firstName:a.payload.firstName,lastName:a.payload.lastName,email:a.payload.email}; localStorage.setItem("token",a.payload.token); localStorage.setItem("user",JSON.stringify(s.user)); });
     b.addCase(login.rejected, s=>{s.loading=false});
     b.addCase(register.pending, s=>{s.loading=true});
-    b.addCase(register.fulfilled, (s,a)=>{ s.loading=false; s.token=a.payload.token; s.user={firstName:a.payload.firstName,lastName:a.payload.lastName,email:a.payload.email,currency:a.payload.currency}; localStorage.setItem("token",a.payload.token); localStorage.setItem("user",JSON.stringify(s.user)); });
+    b.addCase(register.fulfilled, (s,a)=>{ s.loading=false; s.token=a.payload.token; s.user={firstName:a.payload.firstName,lastName:a.payload.lastName,email:a.payload.email}; localStorage.setItem("token",a.payload.token); localStorage.setItem("user",JSON.stringify(s.user)); });
     b.addCase(register.rejected, s=>{s.loading=false});
   }
 });

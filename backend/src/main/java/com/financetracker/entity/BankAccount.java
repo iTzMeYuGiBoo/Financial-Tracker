@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-@Entity @Table(name="bank_accounts", schema = "finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="bank_accounts") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class BankAccount {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     @Column(nullable=false) private String name;

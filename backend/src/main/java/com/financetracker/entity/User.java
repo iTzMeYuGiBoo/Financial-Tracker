@@ -7,14 +7,13 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.*;
 
-@Entity @Table(name="users", schema = "finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="users") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class User implements UserDetails {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
     private String firstName;
     private String lastName;
     @Column(unique=true,nullable=false) private String email;
     @Column(nullable=false) private String password;
-    @Builder.Default private String currency = "EUR";
     @Builder.Default private LocalDateTime createdAt = LocalDateTime.now();
 
     @PrePersist

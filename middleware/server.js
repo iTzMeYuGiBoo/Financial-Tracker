@@ -6,8 +6,13 @@ const axios = require("axios");
 
 const app = express();
 const PORT     = process.env.PORT        || 4000;
-const BACKEND  = process.env.BACKEND_URL  || "http://localhost:8080";
-const FRONTEND = process.env.FRONTEND_URL || "http://localhost:3000";
+const BACKEND  = process.env.BACKEND_URL;
+const FRONTEND = process.env.FRONTEND_URL;
+
+if (!BACKEND || !FRONTEND) {
+  console.error("FATAL: BACKEND_URL and FRONTEND_URL env vars are required.");
+  process.exit(1);
+}
 
 // ─── Global ───────────────────────────────────────────────────────────────────
 app.use(cors({ origin: FRONTEND, credentials: true }));

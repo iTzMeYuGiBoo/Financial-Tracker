@@ -4,7 +4,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-@Entity @Table(name="transactions", schema = "finance_app") @Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Entity @Table(name="transactions") @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Transaction {
     public enum TransactionType { INCOME, EXPENSE }
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;

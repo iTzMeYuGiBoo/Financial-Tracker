@@ -5,7 +5,7 @@
  */
 const axios = require("axios");
 
-const BACKEND = process.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND = process.env.BACKEND_URL;
 
 // ── Helper: call backend with user's auth token ────────────────────────────
 async function callBackend(method, path, authHeader, params = {}, data = null) {
