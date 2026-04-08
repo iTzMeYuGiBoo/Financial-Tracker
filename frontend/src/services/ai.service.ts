@@ -7,6 +7,7 @@ export const aiService = {
   getCarbonInsights: (d:any) => aiApi.post("/ai/carbon-insights", d),
   getMonthlyReview: (d:any) => aiApi.post("/ai/monthly-review", d),
   getSubscriptionAdvice: (d:any) => aiApi.post("/subscriptions/advice", d),
+  chat: (message:string, history:{role:string;content:string}[]=[]) => aiApi.post("/ai/chat", { message, history }),
   scanReceipt: (file:File) => { const f = new FormData(); f.append("receipt", file); return aiApi.post("/receipt/scan", f); },
   getExchangeRates: (base="EUR") => aiApi.get(`/exchange-rates?base=${base}`),
 };

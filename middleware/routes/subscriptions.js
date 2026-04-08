@@ -1,29 +1,20 @@
 const express = require("express");
 const router = express.Router();
+const { generateSimple } = require("../mcp");
 
-let openaiClient = null;
-if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== "your_openai_api_key_here") {
-  const OpenAI = require("openai");
-  openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  console.log("✅ OpenAI client for subscriptions initialised");
+const isConfigured = () =>
+  process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== "your_gemini_api_key_here";
+
+if (isConfigured()) {
+  console.log("✅ Gemini client for subscriptions initialised");
 } else {
-  console.log("ℹ️  No OpenAI key for subscriptions — using mock responses");
+  console.log("ℹ️  No Gemini key for subscriptions — using mock responses");
 }
-
-const askGpt = async (prompt) => {
-  const r = await openaiClient.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    response_format: { type: "json_object" },
-    max_tokens: 600,
-  });
-  return JSON.parse(r.choices[0].message.content);
-};
 
 router.post("/advice", async (req, res) => {
   try {
     const { subscriptions, monthlyIncome } = req.body || {};
-    if (!openaiClient) {
+    if (!isConfigured()) {
       return res.json({
         source: "mock",
         suggestions: [
@@ -51,8 +42,19 @@ Pick 3–5 subscriptions or patterns that you would recommend cancelling, downgr
 Explain why, and estimate rough annual savings where possible.
 Return JSON of the form {"suggestions":["s1","s2","s3",...]}. Each suggestion must be a single sentence starting with an emoji.`;
 
-    const data = await askGpt(prompt);
-    res.json({ source: "openai", ...data });
+    const data = await generateSimple(prompt);
+    if (!data) {
+      return res.json({
+        source: "mock",
+        suggestions: [
+          "📺 Consider downgrading or cancelling at least one streaming service to save €15–€20/month.",
+          "💾 Annual subscriptions (like cloud storage) are often cheaper than monthly billing.",
+          "📱 Audit rarely used apps – gym, meditation, or language apps can add up.",
+          "💳 Paying subscriptions from a single account makes them easier to track and renegotiate.",
+        ],
+      });
+    }
+    res.json({ source: "gemini", ...data });
   } catch (err) {
     console.error("Subscription advice error:", err.message);
     res.status(500).json({ error: "AI service error" });
