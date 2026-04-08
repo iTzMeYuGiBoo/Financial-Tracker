@@ -1,6 +1,5 @@
 package com.financetracker.service;
 
-import com.financetracker.entity.Currency;
 import com.financetracker.repository.CurrencyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,8 +8,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -200,29 +197,13 @@ public class CurrencySeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (repo.count() > 0) {
-            // DB already seeded — add any newly-added currencies that may be missing
-            for (String[] row : CURRENCIES) {
-                String code = row[0];
-                String country = row[3];
-                boolean exists = repo.existsByCodeAndCountry(code, country);
-                if (!exists) {
-                    repo.save(Currency.builder()
-                        .code(code).symbol(row[1]).name(row[2]).country(country).flag(row[4])
-                        .build());
-                    log.info("Added missing currency: {} ({})", code, country);
-                }
-            }
-            return;
-        }
-        log.info("Seeding {} currencies into database...", CURRENCIES.length);
-        List<Currency> entities = new java.util.ArrayList<>();
+        // Use INSERT ... ON CONFLICT DO NOTHING so this is fully idempotent:
+        // safe on a fresh DB, safe on re-deploy, safe when adding new entries.
+        int inserted = 0;
         for (String[] row : CURRENCIES) {
-            entities.add(Currency.builder()
-                .code(row[0]).symbol(row[1]).name(row[2]).country(row[3]).flag(row[4])
-                .build());
+            repo.insertIfAbsent(row[0], row[1], row[2], row[3], row[4]);
+            inserted++;
         }
-        repo.saveAll(entities);
-        log.info("Currency seeding complete.");
+        log.info("Currency seeding complete ({} rows processed, duplicates silently skipped).", inserted);
     }
 }

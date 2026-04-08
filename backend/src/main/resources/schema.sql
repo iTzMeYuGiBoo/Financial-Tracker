@@ -15,18 +15,40 @@ ALTER TABLE IF EXISTS finance_app.users DROP COLUMN IF EXISTS currency;
 
 -- Drop old unique-on-code constraint and replace with composite (code, country)
 -- so that multiple Eurozone countries can each have their own EUR row.
-ALTER TABLE IF EXISTS finance_app.currencies DROP CONSTRAINT IF EXISTS currencies_code_key;
-ALTER TABLE IF EXISTS finance_app.currencies DROP CONSTRAINT IF EXISTS uq_currency_code_country;
+-- We must find the constraint by inspecting pg_constraint because Hibernate may have
+-- generated it with a random name (e.g. uk_5r2dfx1im7vus47ma8y05sflt) rather than
+-- the predictable 'currencies_code_key'. We drop every single-column unique on 'code'.
 DO $$
+DECLARE
+  r record;
 BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'finance_app' AND table_name = 'currencies') THEN
-    IF NOT EXISTS (
-      SELECT 1 FROM pg_constraint
-      WHERE conname = 'uq_currency_code_country'
-    ) THEN
-      ALTER TABLE finance_app.currencies
-        ADD CONSTRAINT uq_currency_code_country UNIQUE (code, country);
-    END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables
+             WHERE table_schema = 'finance_app' AND table_name = 'currencies') THEN
+    -- Drop ALL unique constraints that cover ONLY the 'code' column
+    FOR r IN
+      SELECT c.conname
+      FROM pg_constraint c
+      JOIN pg_class t ON t.oid = c.conrelid
+      JOIN pg_namespace n ON n.oid = t.relnamespace
+      WHERE n.nspname = 'finance_app'
+        AND t.relname = 'currencies'
+        AND c.contype = 'u'
+        AND array_length(c.conkey, 1) = 1
+        AND c.conkey[1] = (
+          SELECT a.attnum FROM pg_attribute a
+          WHERE a.attrelid = t.oid AND a.attname = 'code'
+        )
+    LOOP
+      EXECUTE 'ALTER TABLE finance_app.currencies DROP CONSTRAINT IF EXISTS ' || quote_ident(r.conname);
+      RAISE NOTICE 'Dropped single-column unique constraint on currencies.code: %', r.conname;
+    END LOOP;
+
+    -- Also drop the composite constraint if it exists (will be re-added below cleanly)
+    ALTER TABLE finance_app.currencies DROP CONSTRAINT IF EXISTS uq_currency_code_country;
+
+    -- Add the correct composite unique constraint
+    ALTER TABLE finance_app.currencies
+      ADD CONSTRAINT uq_currency_code_country UNIQUE (code, country);
   END IF;
 END$$;
 -- Remove the generic 'Eurozone' EUR entry (replaced by per-country entries added by CurrencySeeder)
