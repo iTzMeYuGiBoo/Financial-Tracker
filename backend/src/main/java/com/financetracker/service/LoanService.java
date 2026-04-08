@@ -7,12 +7,14 @@ import com.financetracker.repository.BankAccountRepository;
 import com.financetracker.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 
 @Service @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class LoanService {
     private final LoanRepository repo;
     private final UserService userService;
@@ -22,6 +24,7 @@ public class LoanService {
         return repo.findByUserOrderByCreatedAtDesc(userService.getCurrentUser()).stream().map(this::build).toList();
     }
 
+    @Transactional
     public Map<String,Object> create(LoanRequest req) {
         var u = userService.getCurrentUser();
         BankAccount lenderAccount = null;
@@ -46,6 +49,7 @@ public class LoanService {
         return build(repo.save(loan));
     }
 
+    @Transactional
     public Map<String,Object> update(Long id, LoanRequest req) {
         var u = userService.getCurrentUser();
         var loan = repo.findById(id).filter(l -> l.getUser().getId().equals(u.getId()))
@@ -68,6 +72,7 @@ public class LoanService {
         return build(repo.save(loan));
     }
 
+    @Transactional
     public Map<String,Object> makePayment(Long id, Double amount) {
         var u = userService.getCurrentUser();
         var loan = repo.findById(id).filter(l -> l.getUser().getId().equals(u.getId()))
@@ -79,6 +84,7 @@ public class LoanService {
         return build(repo.save(loan));
     }
 
+    @Transactional
     public void delete(Long id) {
         var u = userService.getCurrentUser();
         var loan = repo.findById(id).filter(l -> l.getUser().getId().equals(u.getId()))

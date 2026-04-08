@@ -15,6 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MonthlyNoteService {
 
     private final MonthlyNoteRepository repo;

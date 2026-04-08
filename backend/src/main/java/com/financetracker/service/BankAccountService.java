@@ -16,6 +16,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BankAccountService {
     private final BankAccountRepository repo;
     private final UserService userService;
@@ -29,6 +30,7 @@ public class BankAccountService {
                 .stream().map(this::build).toList();
     }
 
+    @Transactional
     public Map<String,Object> create(BankAccountRequest req){
         var u = userService.getCurrentUser();
         Currency currency = currencyRepo.findById(req.getCurrencyId())

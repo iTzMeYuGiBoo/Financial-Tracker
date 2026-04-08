@@ -11,9 +11,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 @Service @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RecurringTransactionService {
     private final RecurringTransactionRepository rRepo; private final CategoryRepository catRepo; private final BankAccountRepository bankRepo; private final TransactionRepository txRepo; private final UserService userService;
     public List<Map<String,Object>> getAll(){return rRepo.findByUserOrderByNextDueDateAsc(userService.getCurrentUser()).stream().map(this::build).toList();}
+    @Transactional
     public Map<String,Object> create(RecurringRequest req){
         var u=userService.getCurrentUser();
         var cat=catRepo.findById(req.getCategoryId()).orElseThrow(()->new ResourceNotFoundException("Category not found"));
@@ -27,6 +29,7 @@ public class RecurringTransactionService {
             .frequency(RecurringTransaction.Frequency.valueOf(req.getFrequency())).nextDueDate(startDate).endDate(endDate).note(req.getNote()).category(cat).bankAccount(bank).user(u).build();
         return build(rRepo.save(r));
     }
+    @Transactional
     public void delete(Long id){var u=userService.getCurrentUser();var r=rRepo.findById(id).filter(x->x.getUser().getId().equals(u.getId())).orElseThrow(()->new ResourceNotFoundException("Not found"));rRepo.delete(r);}
     @Transactional
     public Map<String,Object> processDue(){

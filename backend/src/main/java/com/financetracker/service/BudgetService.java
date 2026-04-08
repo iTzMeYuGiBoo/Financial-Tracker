@@ -5,6 +5,7 @@ import com.financetracker.exception.ResourceNotFoundException;
 import com.financetracker.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BudgetService {
     private final BudgetRepository budgetRepo;
     private final CategoryRepository catRepo;
@@ -23,6 +25,7 @@ public class BudgetService {
         return budgetRepo.findByUserOrderByYearDescMonthDesc(u).stream().map(b -> buildResponse(b, u)).toList();
     }
 
+    @Transactional
     public Map<String, Object> create(BudgetRequest req) {
         var u = userService.getCurrentUser();
         var cat = catRepo.findById(req.getCategoryId())
@@ -37,6 +40,7 @@ public class BudgetService {
         return buildResponse(budgetRepo.save(b), u);
     }
 
+    @Transactional
     public void delete(Long id) {
         var u = userService.getCurrentUser();
         var b = budgetRepo.findById(id)

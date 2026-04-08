@@ -12,6 +12,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TransactionService {
     private final TransactionRepository txRepo;
     private final CategoryRepository catRepo;

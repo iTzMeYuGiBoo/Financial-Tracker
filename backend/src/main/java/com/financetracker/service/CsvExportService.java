@@ -3,8 +3,10 @@ import com.financetracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.io.*;
 @Service @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CsvExportService {
     private final TransactionRepository txRepo; private final UserService userService;
     public String exportTransactionsCsv() throws IOException {
